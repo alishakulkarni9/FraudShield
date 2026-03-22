@@ -1,0 +1,50 @@
+The dataset is extremely imbalanced, with fraud transactions representing only 0.17% of total data.
+This means that 99.83% of the totality are legitimate transactions and not fraud. This leads to 
+improper and inefficient predictions.
+Therefore, accuracy alone is not an appropriate metric.
+Metrics such as Precision, Recall, F1-score, and ROC-AUC will be more meaningful.
+// The description will help explain the reason why fraud was detected.
+
+We calculated the average mean value of legit transactions and fraudulant transactions.
+legit mean = 88.29 and fraud mean = 122.211
+Now generally, fraud transactions are low to medium however here the fraud mean is bigger than the legit mean. 
+But this can be because of a few fraud higher amout outliers. Hence, it is important to check the average median.
+
+legit median = 22 and fraud median = 9.25
+Now this tells us that the higher mean is only because of the few outliers. Otherwise, the fraud transactions are
+ranged from low to medium only. 
+//Hence, median is more robust than mean.
+
+We use stratify=y in train/test split; why is it important?
+If we randomly split without stratify:
+We might accidentally put most fraud in train
+and almost none in test.
+That would destroy evaluation.
+Stratify ensures:
+Fraud percentage stays same in train and test.
+//That’s professional practice.
+
+//Model Description
+Built fraud detection model on highly imbalanced dataset (0.17% fraud rate), achieving 0.98 ROC-AUC and 
+0.80 PR-AUC using Random Forest with SMOTE. Conducted threshold optimization and feature importance analysis.
+
+//Resume Line
+Designed and deployed an end-to-end fraud detection system with cost-sensitive threshold optimization 
+and SHAP-based explainability. Built interactive dashboard for real-time risk scoring using Streamlit.
+
+// from the shap summary plotting, key findings:
+1. Feature 4 is the strongest predictor
+2. Some features show positive correlation, others negative
+3. Model captures non-linear fraud patterns
+
+“SHAP provides both global interpretability (feature importance) and local interpretability 
+(individual predictions), making the model transparent and trustworthy.”
+“Even though the model is complex (Random Forest), SHAP allows us to interpret it like a linear 
+additive model for each prediction.”
+
+Global explanation → summary plot
+Local explanation → waterfall plot
+“Used SHAP to interpret both global feature importance and individual predictions, 
+improving model transparency.”
+
+“Due to extreme class imbalance, I used class weighting to improve fraud detection and reduce false negatives.”

@@ -1,0 +1,41 @@
+Raw Data
+   ↓
+EDA (Understand data)
+   ↓
+Preprocessing (Clean + Scale + Split)
+   ↓
+Handle Imbalance (SMOTE)
+   ↓
+Train Models (Logistic, RF, XGBoost)
+   ↓
+Evaluate (Precision, Recall, ROC)
+   ↓
+Optimize Threshold
+   ↓
+Explain Predictions (SHAP)
+   ↓
+Save Model (.pkl)
+   ↓
+Build Web App (Streamlit)
+   ↓
+Deploy
+
+PHASE 1: EDA(Exploratory Data Analysis)
+Exploring the data and understanding it properly. Checking if there are any missing values
+and any observing obvious patterns, if any. Seeing what features exist, etc.
+
+Here we got the fraud probability = 0.172%
+This tells that the data is extremely unbalanced. The accuracy will mislead us. 
+Hence, we are going to use special techniques like SMOTE so that we can focus on 
+Recall and Precision.
+
+TECHSTACK:
+1. python- the progg language we are using for everything.
+2. pandas- loading dataset, cleaning, manipulaing data, and splitting features/target
+3. matplotlib(to see the data)- visualizing distributions, understandingthe imbalance and plotting results.
+4. scikit-learn(core ML engine, the ml backbone)- train-test split, logistic regression, random forst, evaluation metrics and scaling.
+5. imbalanced-learn(SMOTE: Synthetic Minority Oversampling Technique)- This creates synthetic fraud samples to balance the training data.
+   Without this, the model would ignore frauds.(due to the 99.83% probability of non-fraud)
+6. XGBoost- Advanced gradient boosting model. Good performance in tabular data, and add power beyond basic models.
+7. SHAP- the explanability tool. This will explain why the transaction was detected fraudulant.
+8. Streamlit(deployement)- will be used to build web interface, input fields, fraud probabilty output and visualization(turn the ml model into a product).

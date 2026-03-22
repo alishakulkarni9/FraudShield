@@ -1,0 +1,45 @@
+# ----------------------
+# Python cache
+# ----------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ----------------------
+# Virtual Environment
+# ----------------------
+venv/
+.env/
+
+# ----------------------
+# Jupyter Notebook checkpoints
+# ----------------------
+.ipynb_checkpoints/
+
+# ----------------------
+# Dataset (large file)
+# ----------------------
+data/creditcard.csv
+
+# ----------------------
+# Model files (optional: ignore if large)
+# ----------------------
+*.pkl
+
+# ----------------------
+# Outputs (optional)
+# ----------------------
+outputs/
+
+# ----------------------
+# IDE / Editor files
+# ----------------------
+.vscode/
+.idea/
+
+# ----------------------
+# System files
+# ----------------------
+.DS_Store
+Thumbs.db
