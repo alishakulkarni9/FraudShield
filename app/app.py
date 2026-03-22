@@ -6,71 +6,68 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Fraud Detection", layout="wide")
 
-# Load model and scaler
+# Load model
 model = joblib.load("models/fraud_model.pkl")
 scaler = joblib.load("models/scaler.pkl")
 
-# ---------------- SAMPLE TRANSACTIONS ----------------
-# Each entry = (features array, label)
-# NOTE: Replace with real samples from your dataset if needed
-
+# ---------------- SAMPLE DATA ----------------
 sample_data = [
-    {
-        "features": [0.1]*30,
-        "label": 0
-    },
-    {
-        "features": [-1.2]*30,
-        "label": 1
-    },
-    {
-        "features": [0.5]*30,
-        "label": 0
-    },
-    {
-        "features": [-0.8]*30,
-        "label": 1
-    }
+    {"features": [0.1]*30, "label": 0},
+    {"features": [-1.2]*30, "label": 1},
+    {"features": [0.5]*30, "label": 0},
+    {"features": [-0.8]*30, "label": 1}
 ]
 
 # ---------------- UI ----------------
-st.title("Credit Card Fraud Detection System")
-st.markdown("Machine learning-based detection with explainable AI")
+st.title("🛡️ FraudShield - Credit Card Fraud Detection")
+st.markdown("AI-powered fraud detection with explainable insights")
 
 st.divider()
 
-# --- Selection ---
-st.subheader("Transaction Selection")
-
-mode = st.selectbox(
-    "Select Transaction Type",
-    ["Random", "Fraud Only", "Legitimate Only"]
+# ---------------- MODE SELECTION ----------------
+mode = st.radio(
+    "Choose Input Method",
+    ["Use Sample Transaction", "Enter Transaction Manually"]
 )
 
-# Filter sample data
-if mode == "Fraud Only":
-    filtered = [d for d in sample_data if d["label"] == 1]
-elif mode == "Legitimate Only":
-    filtered = [d for d in sample_data if d["label"] == 0]
+# ---------------- INPUT HANDLING ----------------
+if mode == "Use Sample Transaction":
+
+    index = st.slider("Select Sample Transaction", 0, len(sample_data)-1, 0)
+    selected = sample_data[index]
+
+    X = np.array(selected["features"]).reshape(1, -1)
+    actual_class = "Fraud" if selected["label"] == 1 else "Legitimate"
+
+    st.caption(f"Sample Transaction ID: {index}")
+    st.caption(f"Actual Label: {actual_class}")
+
 else:
-    filtered = sample_data
+    st.subheader("Enter Transaction Details")
 
-index = st.slider("Select Transaction", 0, len(filtered)-1, 0)
+    col1, col2 = st.columns(2)
 
-selected = filtered[index]
+    with col1:
+        amount = st.number_input("Transaction Amount", value=100.0)
+        v1 = st.number_input("V1", value=0.0)
+        v2 = st.number_input("V2", value=0.0)
 
-X = np.array(selected["features"]).reshape(1, -1)
+    with col2:
+        v3 = st.number_input("V3", value=0.0)
+        v4 = st.number_input("V4", value=0.0)
+        v5 = st.number_input("V5", value=0.0)
+
+    # Fill remaining features with 0
+    features = [v1, v2, v3, v4, v5] + [0]*25
+    X = np.array(features).reshape(1, -1)
+
+# Scale input
 X_scaled = scaler.transform(X)
-
-actual_class = "Fraud" if selected["label"] == 1 else "Legitimate"
-
-st.caption(f"Selected Transaction ID: {index}")
-st.caption(f"Actual Label: {actual_class}")
 
 st.divider()
 
-# --- Prediction ---
-if st.button("Run Analysis"):
+# ---------------- PREDICTION ----------------
+if st.button("🔍 Run Fraud Analysis"):
 
     prob = model.predict_proba(X_scaled)[0][1]
     threshold = 0.05
@@ -84,18 +81,18 @@ if st.button("Run Analysis"):
         st.subheader("Prediction")
 
         if pred == 1:
-            st.error("Fraudulent Transaction")
+            st.error("🚨 Fraudulent Transaction")
         else:
-            st.success("Legitimate Transaction")
+            st.success("✅ Legitimate Transaction")
 
     with col2:
         st.subheader("Confidence Score")
-        st.metric(label="Fraud Probability", value=f"{prob:.4f}")
+        st.metric("Fraud Probability", f"{prob:.4f}")
 
     st.divider()
 
-    # --- SHAP ---
-    st.subheader("Feature Impact Analysis")
+    # ---------------- SHAP ----------------
+    st.subheader("📊 Feature Impact Analysis")
 
     explainer = shap.Explainer(model)
     shap_values = explainer(X_scaled)
@@ -104,15 +101,13 @@ if st.button("Run Analysis"):
     shap.plots.bar(shap_values[0, :, 1], show=False)
     st.pyplot(fig)
 
-    # --- Text Explanation ---
+    # ---------------- TEXT EXPLANATION ----------------
     values = shap_values[0, :, 1].values
-
-    # Dummy feature names (since dataset removed)
     feature_names = [f"V{i}" for i in range(len(values))]
 
     top_idx = np.argsort(np.abs(values))[-5:][::-1]
 
-    st.subheader("Key Factors Influencing Prediction")
+    st.subheader("🔍 Key Influencing Features")
 
     for i in top_idx:
         impact = values[i]
