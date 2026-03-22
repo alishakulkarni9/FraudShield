@@ -1,24 +1,45 @@
 import streamlit as st
 import joblib
 import numpy as np
-import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Fraud Detection", layout="wide")
 
-# Load assets
+# Load model and scaler
 model = joblib.load("models/fraud_model.pkl")
 scaler = joblib.load("models/scaler.pkl")
-df = pd.read_csv("data/creditcard.csv")
 
-# Title
+# ---------------- SAMPLE TRANSACTIONS ----------------
+# Each entry = (features array, label)
+# NOTE: Replace with real samples from your dataset if needed
+
+sample_data = [
+    {
+        "features": [0.1]*30,
+        "label": 0
+    },
+    {
+        "features": [-1.2]*30,
+        "label": 1
+    },
+    {
+        "features": [0.5]*30,
+        "label": 0
+    },
+    {
+        "features": [-0.8]*30,
+        "label": 1
+    }
+]
+
+# ---------------- UI ----------------
 st.title("Credit Card Fraud Detection System")
 st.markdown("Machine learning-based detection with explainable AI")
 
 st.divider()
 
-# --- Input Section ---
+# --- Selection ---
 st.subheader("Transaction Selection")
 
 mode = st.selectbox(
@@ -26,36 +47,37 @@ mode = st.selectbox(
     ["Random", "Fraud Only", "Legitimate Only"]
 )
 
+# Filter sample data
 if mode == "Fraud Only":
-    df_filtered = df[df["Class"] == 1].reset_index(drop=True)
+    filtered = [d for d in sample_data if d["label"] == 1]
 elif mode == "Legitimate Only":
-    df_filtered = df[df["Class"] == 0].reset_index(drop=True)
+    filtered = [d for d in sample_data if d["label"] == 0]
 else:
-    df_filtered = df.reset_index(drop=True)
+    filtered = sample_data
 
-index = st.slider("Select Transaction", 0, len(df_filtered)-1, 0)
+index = st.slider("Select Transaction", 0, len(filtered)-1, 0)
 
-row = df_filtered.iloc[index]
+selected = filtered[index]
 
-X = row.drop("Class").values.reshape(1, -1)
+X = np.array(selected["features"]).reshape(1, -1)
 X_scaled = scaler.transform(X)
 
+actual_class = "Fraud" if selected["label"] == 1 else "Legitimate"
+
 st.caption(f"Selected Transaction ID: {index}")
-actual_class = "Fraud" if row["Class"] == 1 else "Legitimate"
-# st.caption(f"Actual Label: {actual_class}")
+st.caption(f"Actual Label: {actual_class}")
 
 st.divider()
 
 # --- Prediction ---
 if st.button("Run Analysis"):
 
-    # prob = model.predict_proba(X_scaled)[0][1]
-    # pred = 1 if prob > 0.3 else 0
-    
     prob = model.predict_proba(X_scaled)[0][1]
-    threshold = 0.05   # try 0.05 first
+    threshold = 0.05
     pred = 1 if prob > threshold else 0
+
     st.caption(f"Decision Threshold: {threshold}")
+
     col1, col2 = st.columns(2)
 
     with col1:
@@ -72,7 +94,7 @@ if st.button("Run Analysis"):
 
     st.divider()
 
-    # --- SHAP Explanation ---
+    # --- SHAP ---
     st.subheader("Feature Impact Analysis")
 
     explainer = shap.Explainer(model)
@@ -81,17 +103,17 @@ if st.button("Run Analysis"):
     fig, ax = plt.subplots()
     shap.plots.bar(shap_values[0, :, 1], show=False)
     st.pyplot(fig)
+
     # --- Text Explanation ---
-values = shap_values[0, :, 1].values
-features = df.drop("Class", axis=1).columns
+    values = shap_values[0, :, 1].values
 
-top_idx = np.argsort(np.abs(values))[-5:][::-1]
+    # Dummy feature names (since dataset removed)
+    feature_names = [f"V{i}" for i in range(len(values))]
 
-st.subheader("Key Factors Influencing Prediction")
+    top_idx = np.argsort(np.abs(values))[-5:][::-1]
 
-for i in top_idx:
-    impact = values[i]
-    direction = "increased" if impact > 0 else "decreased"
+    st.subheader("Key Factors Influencing Prediction")
 
-    # st.write(f"- {features[i]} {direction} the fraud probability")
-    st.write(f"{features[i]} contributed to {'higher' if impact > 0 else 'lower'} fraud risk")
+    for i in top_idx:
+        impact = values[i]
+        st.write(f"{feature_names[i]} contributed to {'higher' if impact > 0 else 'lower'} fraud risk")
